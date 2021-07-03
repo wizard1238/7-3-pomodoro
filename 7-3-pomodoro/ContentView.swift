@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ContentView: View {
     
+    var initialCountdown: Double = 10 * 60 // 10 minutes
+    
     @State var receiver = Timer.publish(every: 1, on: .current, in: .default).autoconnect()
     @State var seconds: Int = 0;
     @State var status: String = "Start"
@@ -52,10 +54,9 @@ struct ContentView: View {
                     withAnimation(Animation.linear(duration: 0.01)) {
                         seconds += 1;
                     }
-                }x
-                
+                }
             })
-            
+            Text(GetFormattedTime(iseconds: initialCountdown))
             Button(status) {
                 if (status == "Start") {
                     status = "Stop"
@@ -64,6 +65,12 @@ struct ContentView: View {
                 }
             }
         }
+    }
+    func GetFormattedTime(iseconds: Double) -> String{
+        let minutes = Int(floor(iseconds/60))
+        let seconds = Int(Int(iseconds) % 60)
+        
+        return String(minutes) + ":" + ((seconds < 10) ? "0" : "") + String(seconds)
     }
 }
 
