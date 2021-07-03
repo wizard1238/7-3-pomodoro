@@ -18,6 +18,7 @@ struct ContentView: View {
     @State var countdown: Double = 0
     @State var section: Int = 1
     @State var phase: String = "Pomodoro Timer"
+    @State var colors: [Color] = [Color](repeating: .primary, count: 8)
     
     var circleDiameter: CGFloat = UIScreen.main.bounds.width * 0.9
     
@@ -30,10 +31,12 @@ struct ContentView: View {
             HStack {
                 ForEach(0..<8) { i in
                     Rectangle()
+                        .fill(colors[i])
                         .frame(width: (UIScreen.main.bounds.width - rectWidthOffset) / rectWidthMult, height: rectHeight)
                 }
             }
             Text(phase)
+            Spacer()
             ZStack {
                 Circle()
                     .fill(Color.primary)
@@ -66,16 +69,20 @@ struct ContentView: View {
                 }
             })
             Text(GetFormattedTime(iSeconds: countdown))
+            Spacer()
             Button(status) {
                 if (status == "Start") {
                     if countdown == 0 {
                         section += 1
                         if (section > 8) {
                             section = 1;
+                            colors = [Color](repeating: .primary, count: 8)
                         }
+                        
                         seconds = 0
                         countdown = Double(getTimeSegment(section: section).rawValue) * 60
                     }
+                    colors[section - 1] = .green
                     status = "Stop"
                     getLabel(section: section)
                 } else {
@@ -88,8 +95,11 @@ struct ContentView: View {
                 seconds = 0
                 countdown = Double(getTimeSegment(section: section).rawValue) * 60
                 status = "Start"
+                colors = [Color](repeating: .primary, count: 8)
             }
+            Spacer()
         }
+        .padding()
     }
     
     func GetFormattedTime(iSeconds: Double) -> String {
