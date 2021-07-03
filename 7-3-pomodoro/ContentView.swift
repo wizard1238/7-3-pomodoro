@@ -9,13 +9,15 @@ import SwiftUI
 
 struct ContentView: View {
     
-    var initialCountdown: Double = 10 // 10 minutes
+    var initialCountdown: Double = 2 * 60 // 10 minutes
     
     @State var receiver = Timer.publish(every: 1, on: .current, in: .default).autoconnect()
     @State var texts: String = "hello"
     @State var seconds: Int = 0
     @State var status: String = "Start"
     @State var countdown: Double = 0
+    @State var section: Int = 1
+    @State var phase: String = "Pomodoro Timer"
     
     var circleDiameter: CGFloat = UIScreen.main.bounds.width * 0.9
     
@@ -31,7 +33,7 @@ struct ContentView: View {
                         .frame(width: (UIScreen.main.bounds.width - rectWidthOffset) / rectWidthMult, height: rectHeight)
                 }
             }
-            
+            Text(phase)
             ZStack {
                 Circle()
                     .fill(Color.primary)
@@ -50,32 +52,78 @@ struct ContentView: View {
                     .rotationEffect(Angle(degrees: Double(seconds*6)))
             }
             .onAppear() {
-                countdown = initialCountdown*60
+                countdown = Double(getTimeSegment(section: section).rawValue) * 60
             }
             .onReceive(receiver, perform: { _ in
                 if (countdown > 0 && status == "Stop") {
                     withAnimation(Animation.linear(duration: 0.01)) {
-                        seconds += 1
+                        seconds += 30
                     }
-                    countdown -= 1
+                    countdown -= 30
+                }
+                if countdown == 0 {
+                    status = "Start"
                 }
             })
             Text(GetFormattedTime(iSeconds: countdown))
             Button(status) {
                 if (status == "Start") {
+                    if countdown == 0 {
+                        section += 1
+                        if (section > 8) {
+                            section = 1;
+                        }
+                        seconds = 0
+                        countdown = Double(getTimeSegment(section: section).rawValue) * 60
+                    }
                     status = "Stop"
+                    getLabel(section: section)
                 } else {
+                    
                     status = "Start"
                 }
             }
+            Button("Reset") {
+                section = 1
+                seconds = 0
+                countdown = Double(getTimeSegment(section: section).rawValue) * 60
+                status = "Start"
+            }
         }
     }
+    
     func GetFormattedTime(iSeconds: Double) -> String {
         let minutes = Int(floor(iSeconds/60))
         let seconds = Int(Int(iSeconds)%60)
         
         return String(minutes) + ":" + ((seconds < 10) ? "0" : "") + String(seconds)
     }
+    
+    func getTimeSegment(section: Int) -> Sections {
+        if section % 2 != 0 {
+            return .work
+        } else if section == 8 {
+            return .long_break
+        } else {
+            return .short_break
+        }
+    }
+    
+    func getLabel(section: Int) {
+        if section % 2 != 0 {
+            phase = "Work"
+        } else if section == 8 {
+            phase = "Long Break"
+        } else {
+            phase = "Short Break"
+        }
+    }
+}
+
+enum Sections: Int {
+    case work = 3
+    case short_break = 1
+    case long_break = 2
 }
 
 struct ContentView_Previews: PreviewProvider {
